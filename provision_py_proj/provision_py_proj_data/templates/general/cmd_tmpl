@@ -1,0 +1,10 @@
+#!{python_interpreter_path}
+"""Command line interface for {app_name}."""
+
+import sys
+from {app_name}.main import main
+
+if __name__ == "__main__":
+    main(*sys.argv)
+
+

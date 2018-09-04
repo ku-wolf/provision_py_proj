@@ -1,0 +1,98 @@
+#!/usr/bin/python3
+"""Setup module for provisioner pkg."""
+from setuptools import setup, find_packages
+import os
+import sys
+import shutil
+import stat
+from setuptools.command.develop import develop
+from setuptools.command.install import install
+
+pkg_name = "{app_name}"
+parent_dir = os.path.dirname(os.path.realpath(__file__))
+data_src_dir = pkg_name + "_data"
+config_src_dir = pkg_name + "_config"
+defaults_location = os.path.join(pkg_name, "defaults")
+requires = list({requirements})
+
+# Create scripts list
+script_dir = "{script_dir}"
+scripts = []
+try:
+    for f in os.listdir(script_dir):
+        scripts.append(script_dir + str(f))
+except FileNotFoundError:
+    pass
+
+pkg_has_config = not {no_config}
+if pkg_has_config:
+    requires.append("provision_py_proj")
+
+
+def copy_pkg_files():
+    """Copy config and data files."""
+    from appdirs import user_data_dir, user_config_dir
+
+    pkg_dirs_to_copy = [
+        (data_src_dir, user_data_dir()),
+        (config_src_dir, user_config_dir())
+    ]
+    for d, t in pkg_dirs_to_copy:
+        t = os.path.join(t, d)
+        d = os.path.join(pkg_name, d)
+
+        shutil.rmtree(t, ignore_errors=True)
+        shutil.copytree(d, t)
+
+        user = os.environ["SUDO_USER"]
+
+        for root, dirs, files in os.walk(t):
+            shutil.chown(root, user=user, group=user)
+            os.chmod(root, stat.S_IRWXU)
+
+            for d in dirs:
+                d_path = os.path.join(root, d)
+                shutil.chown(d_path, user=user, group=user)
+                os.chmod(d_path, stat.S_IRWXU)
+
+            for f in files:
+                f_path = os.path.join(root, f)
+                shutil.chown(f_path, user=user, group=user)
+                os.chmod(f_path, stat.S_IRUSR | stat.S_IWUSR)
+
+
+def reset():
+    """Remove build dirs."""
+    dirnames_to_remove = [pkg_name + ".egg-info", "dist", "build"]
+    for d in dirnames_to_remove:
+        shutil.rmtree(d, ignore_errors=True)
+
+
+def setuptools_setup():
+    """Setup provisioner."""
+    setup(
+        name="{app_name}",
+        version="{version}",
+        description="{description}",
+        url="{url}",
+        author="{author}",
+        author_email="{author_email}",
+        license="{license}",
+        packages=find_packages(),
+        scripts=scripts,
+        install_requires=requires,
+        setup_requires=requires,
+    )
+
+
+def main():
+    """Main method."""
+    if sys.argv[1] == "reset":
+        reset()
+    else:
+        setuptools_setup()
+        if pkg_has_config:
+            copy_pkg_files()
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,11 @@
+"""Empty Py pkg defaults module."""
+
+defaults = dict(
+    version={version},
+    description={description},
+    author={author},
+    author_email={author_email},
+    license={license},
+    url={license},
+    python_interpreter_path={python_interpreter_path},
+)

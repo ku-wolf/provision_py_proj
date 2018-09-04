@@ -1,0 +1,6 @@
+#/usr/bin/python3
+
+from provision_py_proj.main import main
+
+if __name__ == "__main__":
+   main() 

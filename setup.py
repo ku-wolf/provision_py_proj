@@ -85,6 +85,8 @@ def setuptools_setup():
 
 def main():
     """Main method."""
+    os.chdir(parent_dir)
+
     if sys.argv[1] == "reset":
         reset()
     else:

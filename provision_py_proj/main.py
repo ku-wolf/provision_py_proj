@@ -19,6 +19,8 @@ from provision_py_proj.license_manager import get_license_names, write_license, 
 
 bin_dir = "bin"
 test_dir = "test"
+config_dir_suffix = "_config"
+data_dir_suffix = "_data"
 readme_name = "README.md"
 setup_name = "setup.py"
 manifest_name = "MANIFEST.in"
@@ -105,6 +107,15 @@ provisioner_options = [
         }
     },
     {
+        name_key: no_data_key,
+        kwargs_key: {
+            is_flag_key: True,
+            help_key: "Indicate package has no data and will not create data dirs.".format(cnf=pkg_name),
+            prompt_key: False
+        }
+
+    },
+    {
         name_key: no_bin_key,
         kwargs_key: {
             is_flag_key: True,
@@ -178,7 +189,12 @@ def provision(**kwargs):
     app_name = kwargs.get(app_name_key)
     license = kwargs.get(license_key)
     no_bin = kwargs.get(no_bin_key)
+    no_config = kwargs.get(no_config_key)
+    no_data = kwargs.get(no_data_key)
+    requirements = list(kwargs.get(requirements_key))
     include_bin = not no_bin
+    include_config = not no_config
+    include_data = not no_data
 
     if os.path.exists(app_name):
         print(
@@ -193,19 +209,28 @@ def provision(**kwargs):
     bin_path = os.path.join(app_name, bin_dir)
     main_app_path = os.path.join(app_name, app_name)
     test_path = os.path.join(main_app_path, test_dir)
+    data_path = os.path.join(main_app_path, app_name + data_dir_suffix)
+    config_path = os.path.join(main_app_path, app_name + config_dir_suffix)
 
     paths_to_create = [app_name]
     if include_bin:
         paths_to_create.append(bin_path)
+    if include_config:
+        paths_to_create.append(config_path)
+        requirements.append(pkg_name)
+    if include_data:
+        paths_to_create.append(data_path)
 
     python_pkg_dirs = [main_app_path, test_path]
     paths_to_create.extend(python_pkg_dirs)
 
     for path in paths_to_create:
-        os.makedirs(path)
+        os.makedirs(path, exist_ok=True)
 
     for path in python_pkg_dirs:
         open(os.path.join(path, init_file), "a").close()
+
+    kwargs[requirements_key] = requirements
 
     format_empty_pkg_templates(
         app_name,
@@ -235,7 +260,7 @@ main.__doc__ = """
 
     \b
     test_pkg
-    ├── bin
+    ├── (bin)
     │   └── test_pkg
     ├── .gitignore
     ├── LICENSE.txt
@@ -245,7 +270,11 @@ main.__doc__ = """
     ├── setup.py
     └── test_pkg
         ├── __init__.py
-        └── test
+        ├── (test_pkg_data)
+        │   └── ...
+        ├── (test_pkg_config)
+        │   └── ...
+        ├── test
             └── __init__.py
 
 """
@@ -280,25 +309,3 @@ print_defaults = create_print_defaults_command(
     pkg_name,
     group=main
 )
-
-
-main.__doc__ = """
-    Provision an empty Python package.
-
-    Create  empty Package with following structure:
-
-    test_pkg
-    ├── bin
-    │   └── test_pkg
-    ├── .gitignore
-    ├── LICENSE.txt
-    ├── MANIFEST.in
-    ├── README.md
-    ├── requirements.txt
-    ├── setup.py
-    └── test_pkg
-        ├── __init__.py
-        └── test
-            └── __init__.py
-
-"""

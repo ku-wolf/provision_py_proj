@@ -72,7 +72,7 @@ def setuptools_setup():
         name=pkg_name,
         version="0.1",
         description="Provision basic python package with command line interface (For submission to PyPi)",
-        url="",
+        url="https://github.com/ku-wolf/provision_py_proj",
         author="Kevin Wolf",
         author_email="kevinuwolf@gmail.com",
         license="GPLV3",

@@ -4,7 +4,7 @@
 import os
 import shutil
 from provision_py_proj import pkg_name
-from provision_py_proj.config_manager import create_data_dir_name
+from provision_py_proj.data_and_config_manager import create_data_dir_name
 
 license_dir_name = "licenses"
 user_data_dir = create_data_dir_name(pkg_name)

@@ -1,7 +1,7 @@
 """provision_py_proj utils."""
 
 import click
-from provision_py_proj.config_manager import load_default, set_defaults, print_defaults
+from provision_py_proj.data_and_config_manager import load_default, set_defaults, print_defaults
 from functools import partial, update_wrapper
 
 # Option keys

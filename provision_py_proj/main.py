@@ -9,7 +9,7 @@ import copy
 import stat
 from provision_py_proj import pkg_name
 from provision_py_proj.command_creator import *
-from provision_py_proj.config_manager import load_defaults
+from provision_py_proj.data_and_config_manager import load_defaults
 from provision_py_proj.template_formatter import Template
 from provision_py_proj.license_manager import get_license_names, write_license, get_latest_license, print_licenses
 
@@ -217,9 +217,11 @@ def provision(**kwargs):
         paths_to_create.append(bin_path)
     if include_config:
         paths_to_create.append(config_path)
-        requirements.append(pkg_name)
     if include_data:
         paths_to_create.append(data_path)
+
+    if include_config or include_data:
+        requirements.append(pkg_name)
 
     python_pkg_dirs = [main_app_path, test_path]
     paths_to_create.extend(python_pkg_dirs)

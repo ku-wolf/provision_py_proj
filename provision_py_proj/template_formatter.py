@@ -3,9 +3,9 @@
 
 import os
 from provision_py_proj import pkg_name
-from provision_py_proj.data_and_config_manager import create_data_dir_name
+from provision_py_proj.data_and_config_manager import create_data_dir_location
 
-user_data_dir = create_data_dir_name(pkg_name)
+user_data_dir = create_data_dir_location(pkg_name)
 template_dir = os.path.join(user_data_dir, "templates")
 
 general_name = "general"

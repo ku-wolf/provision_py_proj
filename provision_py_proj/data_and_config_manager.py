@@ -12,12 +12,22 @@ defaults = {}
 
 def create_config_dir_name(pkg_name):
     """Return name of pkg's config directory."""
-    return os.path.join(user_config_dir(), pkg_name + "_config")
+    return pkg_name + "_config"
 
 
 def create_data_dir_name(pkg_name):
     """Return name of pkg's data directory."""
-    return os.path.join(user_data_dir(), pkg_name + "_data")
+    return pkg_name + "_data"
+
+
+def create_config_dir_location(pkg_name):
+    """Return name of pkg's config directory."""
+    return os.path.join(user_config_dir(), create_config_dir_name(pkg_name))
+
+
+def create_data_dir_location(pkg_name):
+    """Return name of pkg's data directory."""
+    return os.path.join(user_data_dir(), create_data_dir_name(pkg_name))
 
 
 def load_pickle(file_path):

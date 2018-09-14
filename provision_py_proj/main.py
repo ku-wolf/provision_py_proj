@@ -9,18 +9,15 @@ import copy
 import stat
 from provision_py_proj import pkg_name
 from provision_py_proj.command_creator import *
-from provision_py_proj.data_and_config_manager import load_defaults
+from provision_py_proj.data_and_config_manager import load_defaults, create_data_dir_name, create_config_dir_name
 from provision_py_proj.template_formatter import Template
 from provision_py_proj.license_manager import get_license_names, write_license, get_latest_license, print_licenses
-
 
 
 # Filenames
 
 bin_dir = "bin"
 test_dir = "test"
-config_dir_suffix = "_config"
-data_dir_suffix = "_data"
 readme_name = "README.md"
 setup_name = "setup.py"
 manifest_name = "MANIFEST.in"
@@ -43,6 +40,7 @@ app_name_key = create_option_name("app", "name")
 no_config_key = create_option_name("no", "config")
 no_data_key = create_option_name("no", "data")
 no_bin_key = create_option_name("no", "bin")
+src_dir_key = create_option_name("src", "dir")
 requirements_key = "requirements"
 defaultable_key = "defaultable"
 
@@ -123,6 +121,13 @@ provisioner_options = [
             prompt_key: False
         }
     },
+    {
+        name_key: src_dir_key,
+        kwargs_key: {
+            help_key: "Specify directory which contains src files.",
+            prompt_key: False
+        }
+    },
 ]
 
 set_defaults_options = copy.deepcopy(provisioner_options)
@@ -168,13 +173,15 @@ def format_empty_pkg_templates(app_dir, include_bin, **kwargs):
     manifest_target = os.path.join(app_dir, manifest_name)
     readme_target = os.path.join(app_dir, readme_name)
     gitignore_target = os.path.join(app_dir, gitignore_name)
+    init_target = os.path.join(app_dir, app_dir, init_file)
 
     templates = [
         Template("setup", setup_target, stat.S_IRWXU),
         Template("requirements", requirements_target),
         Template("manifest", manifest_target),
         Template("readme", readme_target),
-        Template("gitignore", gitignore_target)
+        Template("gitignore", gitignore_target),
+        Template("init", init_target)
     ]
 
     if include_bin:
@@ -209,8 +216,8 @@ def provision(**kwargs):
     bin_path = os.path.join(app_name, bin_dir)
     main_app_path = os.path.join(app_name, app_name)
     test_path = os.path.join(main_app_path, test_dir)
-    data_path = os.path.join(main_app_path, app_name + data_dir_suffix)
-    config_path = os.path.join(main_app_path, app_name + config_dir_suffix)
+    data_path = os.path.join(main_app_path, create_data_dir_name(app_name))
+    config_path = os.path.join(main_app_path, create_config_dir_name(app_name))
 
     paths_to_create = [app_name]
     if include_bin:

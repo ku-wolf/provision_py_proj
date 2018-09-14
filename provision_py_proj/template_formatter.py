@@ -33,7 +33,7 @@ class Template:
     def write_formatted_template(self, **kwargs):
         """Format template with kwargs and write to target."""
         with open(self.template_path, "r") as template:
-            with open(self.target, "w+") as target:
+            with open(self.target, "a") as target:
                 for l in template:
                     target.write(l.format(**kwargs))
             if self.file_stat:

@@ -7,6 +7,7 @@ import sys
 import shutil
 import copy
 import stat
+from subprocess import call
 from provision_py_proj import pkg_name
 from provision_py_proj.command_creator import *
 from provision_py_proj.data_and_config_manager import load_defaults, create_data_dir_name, create_config_dir_name
@@ -191,17 +192,56 @@ def format_empty_pkg_templates(app_dir, include_bin, **kwargs):
         t.write_formatted_template(**kwargs)
 
 
+def rename_src(src_dir):
+    i = 1
+    suffix = "_provision_src"
+
+    def create_new_name():
+        end = "_" + str(i) if i > 1 else ""
+        return str(src_dir) + suffix + end
+
+    new_name = create_new_name()
+    while os.path.exists(new_name):
+        i += 1
+        new_name = create_new_name()
+
+    shutil.move(src_dir, new_name)
+    return new_name
+    
+
 def provision(**kwargs):
     """Create files and dirs for empty py pkg."""
+    # retrieve args
     app_name = kwargs.get(app_name_key)
     license = kwargs.get(license_key)
     no_bin = kwargs.get(no_bin_key)
     no_config = kwargs.get(no_config_key)
     no_data = kwargs.get(no_data_key)
     requirements = list(kwargs.get(requirements_key))
+    old_src_dir = kwargs.get(src_dir_key)
     include_bin = not no_bin
     include_config = not no_config
     include_data = not no_data
+
+    # define pkg structure
+    bin_path = os.path.join(app_name, bin_dir)
+    main_app_path = os.path.join(app_name, app_name)
+    test_path = os.path.join(main_app_path, test_dir)
+    data_path = os.path.join(main_app_path, create_data_dir_name(app_name))
+    config_path = os.path.join(main_app_path, create_config_dir_name(app_name))
+
+
+    #cp from src
+    new_src_dir = None
+    if old_src_dir is not None:
+        try:
+            if old_src_dir == app_name:
+                new_src_dir = rename_src(old_src_dir)
+            else:
+                new_src_dir = old_src_dir
+        except:
+            if new_src_dir is not None:
+                shutil.move(new_src_dir, old_src_dir)
 
     if os.path.exists(app_name):
         print(
@@ -213,12 +253,10 @@ def provision(**kwargs):
         else:
             sys.exit(1)
 
-    bin_path = os.path.join(app_name, bin_dir)
-    main_app_path = os.path.join(app_name, app_name)
-    test_path = os.path.join(main_app_path, test_dir)
-    data_path = os.path.join(main_app_path, create_data_dir_name(app_name))
-    config_path = os.path.join(main_app_path, create_config_dir_name(app_name))
+    if new_src_dir is not None:
+        shutil.copytree(new_src_dir, main_app_path)
 
+    #create pkg structure
     paths_to_create = [app_name]
     if include_bin:
         paths_to_create.append(bin_path)
@@ -226,9 +264,6 @@ def provision(**kwargs):
         paths_to_create.append(config_path)
     if include_data:
         paths_to_create.append(data_path)
-
-    if include_config or include_data:
-        requirements.append(pkg_name)
 
     python_pkg_dirs = [main_app_path, test_path]
     paths_to_create.extend(python_pkg_dirs)
@@ -239,8 +274,12 @@ def provision(**kwargs):
     for path in python_pkg_dirs:
         open(os.path.join(path, init_file), "a").close()
 
+    #update requirements kwargs
+    if include_config or include_data:
+        requirements.append(pkg_name)
     kwargs[requirements_key] = requirements
 
+    # build templates with kwargs
     format_empty_pkg_templates(
         app_name,
         script_dir=bin_dir,
@@ -248,6 +287,7 @@ def provision(**kwargs):
         **kwargs
     )
 
+    # cp license
     license_target = os.path.join(app_name, license_file_name)
     write_license(name=license, dest=license_target)
 

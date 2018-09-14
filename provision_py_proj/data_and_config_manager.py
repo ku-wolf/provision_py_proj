@@ -46,7 +46,7 @@ def pass_config_path(f):
     """Pass defaults file path to f."""
     @wraps(f)
     def wrapper(pkg_name, *args, **kwargs):
-        config_dir = create_config_dir_name(pkg_name)
+        config_dir = create_config_dir_location(pkg_name)
         return f(pkg_name, *args, config_dir=config_dir, **kwargs)
 
     return wrapper

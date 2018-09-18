@@ -14,8 +14,8 @@ data_src_dir = pkg_name + "_data"
 config_src_dir = pkg_name + "_config"
 defaults_location = os.path.join(pkg_name, "defaults")
 requires = [
+    "appdirs"
     "click",
-    "appdirs",
     "pytest"
 ]
 

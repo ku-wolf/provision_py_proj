@@ -13,7 +13,7 @@ parent_dir = os.path.dirname(os.path.realpath(__file__))
 data_src_dir = pkg_name + "_data"
 config_src_dir = pkg_name + "_config"
 defaults_location = os.path.join(pkg_name, "defaults")
-requires = list({requirements})
+requires = {requirements}
 
 # Create scripts list
 script_dir = os.path.join(parent_dir, "{script_dir}")

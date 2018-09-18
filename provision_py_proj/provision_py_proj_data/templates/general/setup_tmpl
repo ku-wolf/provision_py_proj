@@ -25,11 +25,6 @@ try:
 except FileNotFoundError:
     pass
 
-pkg_has_config = not {no_config}
-if pkg_has_config:
-    requires.append("provision_py_proj")
-
-
 def copy_pkg_files():
     """Copy config and data files."""
     from appdirs import user_data_dir, user_config_dir

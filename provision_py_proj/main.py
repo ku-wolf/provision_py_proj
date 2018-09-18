@@ -218,6 +218,8 @@ def provision(**kwargs):
     no_config = kwargs.get(no_config_key)
     no_data = kwargs.get(no_data_key)
     requirements = list(kwargs.get(requirements_key))
+    base_requires = ["appdirs"]
+    requirements.extend(base_requires)
     old_src_dir = kwargs.get(src_dir_key)
     include_bin = not no_bin
     include_config = not no_config

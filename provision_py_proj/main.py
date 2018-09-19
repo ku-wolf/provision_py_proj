@@ -21,7 +21,7 @@ bin_dir = "bin"
 test_dir = "test"
 readme_name = "README.md"
 setup_name = "setup.py"
-abstract_requires_name = "abtract_requires.py"
+abstract_requires_name = "abstract_requires.py"
 manifest_name = "MANIFEST.in"
 requirements_name = "requirements.txt"
 init_file = "__init__.py"
@@ -48,6 +48,7 @@ src_dir_key = create_option_name("src", "dir")
 requirements_key = "requirements"
 defaultable_key = "defaultable"
 bin_dir_key = create_option_name("bin", "dir")
+gen_abstract_requires_key = create_option_name("gen", "abstract", "requires")
 
 reprovision_options = [
     {
@@ -88,7 +89,17 @@ reprovision_options = [
         name_key: bin_dir_key,
         defaultable_key: True,
         kwargs_key: {}
-    }
+    },
+    {
+        name_key: requirements_key,
+        no_default_key: True,
+        kwargs_key: {
+            multiple_key: True,
+            prompt_key: False
+        }
+    },
+
+
 ]
 
 provisioner_options = [
@@ -98,14 +109,6 @@ provisioner_options = [
         defaultable_key: True,
         kwargs_key: {
             prompt_key: False,
-        }
-    },
-    {
-        name_key: requirements_key,
-        no_default_key: True,
-        kwargs_key: {
-            multiple_key: True,
-            prompt_key: False
         }
     },
     {
@@ -162,15 +165,26 @@ app_name_option = {
     kwargs_key: {}
 }
 
-app_dir_option = {
-    name_key: app_dir_key,
-    kwargs_key: {
-        help_key: "Path to pkg dir with setup.py to update.",
+additional_reprovisioner_options = [
+    {
+        name_key: gen_abstract_requires_key,
+        no_default_key: True,
+        kwargs_key: {
+            prompt_key: False,
+            is_flag_key: True,
+            help_key: "Flag to generate abstract requires on reprovision (warning: replaces existing abstract_requires.py)"
+        }
+    },
+    {
+        name_key: app_dir_key,
+        kwargs_key: {
+            help_key: "Path to pkg dir with setup.py to update.",
+        }
     }
-}
+]
 
 provisioner_options.append(app_name_option)
-reprovision_options.append(app_dir_option)
+reprovision_options.extend(additional_reprovisioner_options)
 
 add_license_args = [
     {
@@ -248,14 +262,19 @@ def reprovision(**kwargs):
     if app_parent_dir:
         os.chdir(app_parent_dir)
     print("Re-provisioning {0}...".format(app_name))
-    reprovision_template("setup", **kwargs)
-    reprovision_template("pkg_utils", **kwargs)
+    templates_to_reprovision = ["setup", "pkg_utils"]
+    if gen_abstract_requires_key:
+        templates_to_reprovision.append("abstract_requires")
+
+    reprovision_templates(templates_to_reprovision, **kwargs)
 
 
-def reprovision_template(template, **kwargs):
+def reprovision_templates(templates, **kwargs):
     """Rebuild the template for specified pkg."""
 
-    enable = set([make_template_name(template)])
+    enable = set()
+    for t in templates:
+        enable.add(make_template_name(t))
     format_empty_pkg_templates(enable=enable, **kwargs)
 
 

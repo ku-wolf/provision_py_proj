@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Setup module for provisioner pkg."""
+"""Setup module for {app_name} pkg."""
 from setuptools import setup, find_packages
 import os
 import sys
@@ -7,16 +7,16 @@ import shutil
 import stat
 from setuptools.command.develop import develop
 from setuptools.command.install import install
+from abstract_requires import requires
 
 pkg_name = "{app_name}"
 parent_dir = os.path.dirname(os.path.realpath(__file__))
 data_src_dir = pkg_name + "_data"
 config_src_dir = pkg_name + "_config"
 defaults_location = os.path.join(pkg_name, "defaults")
-requires = {requirements}
 
 # Create scripts list
-script_dir = os.path.join(parent_dir, "{script_dir}")
+script_dir = os.path.join(parent_dir, "{bin_dir}")
 scripts = []
 try:
     for f in os.listdir(script_dir):

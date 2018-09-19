@@ -8,10 +8,10 @@ import shutil
 import copy
 import stat
 from subprocess import call
-from provision_py_proj import pkg_name
+from provision_py_proj.pkg_utils import pkg_name
 from provision_py_proj.command_creator import *
 from provision_py_proj.data_and_config_manager import load_defaults, create_data_dir_name, create_config_dir_name
-from provision_py_proj.template_formatter import Template
+from provision_py_proj.template_formatter import Template, make_template_name
 from provision_py_proj.license_manager import get_license_names, write_license, get_latest_license, print_licenses
 
 
@@ -21,9 +21,11 @@ bin_dir = "bin"
 test_dir = "test"
 readme_name = "README.md"
 setup_name = "setup.py"
+abstract_requires_name = "abtract_requires.py"
 manifest_name = "MANIFEST.in"
 requirements_name = "requirements.txt"
 init_file = "__init__.py"
+pkg_utils_name = "pkg_utils.py"
 license_file_name = "LICENSE.txt"
 gitignore_name = ".gitignore"
 
@@ -38,14 +40,16 @@ def create_option_name(*args):
 # Option names
 license_key = "license"
 app_name_key = create_option_name("app", "name")
+app_dir_key = create_option_name("app", "dir")
 no_config_key = create_option_name("no", "config")
 no_data_key = create_option_name("no", "data")
 no_bin_key = create_option_name("no", "bin")
 src_dir_key = create_option_name("src", "dir")
 requirements_key = "requirements"
 defaultable_key = "defaultable"
+bin_dir_key = create_option_name("bin", "dir")
 
-provisioner_options = [
+reprovision_options = [
     {
         name_key: "description",
         defaultable_key: True,
@@ -80,6 +84,14 @@ provisioner_options = [
             type_key: click.Choice(list(get_license_names())),
         }
     },
+    {
+        name_key: bin_dir_key,
+        defaultable_key: True,
+        kwargs_key: {}
+    }
+]
+
+provisioner_options = [
     {
         name_key: create_option_name("python", "interpreter", "path"),
         alts_key: ["pip"],
@@ -130,6 +142,7 @@ provisioner_options = [
         }
     },
 ]
+provisioner_options.extend(reprovision_options)
 
 set_defaults_options = copy.deepcopy(provisioner_options)
 for o in set_defaults_options:
@@ -143,12 +156,21 @@ for o in set_defaults_options:
 for o in set_defaults_options:
     o[kwargs_key][default_key] = ""
 
-provisioner_options.append(
-    {
-        name_key: app_name_key,
-        kwargs_key: {}
+
+app_name_option = {
+    name_key: app_name_key,
+    kwargs_key: {}
+}
+
+app_dir_option = {
+    name_key: app_dir_key,
+    kwargs_key: {
+        help_key: "Path to pkg dir with setup.py to update.",
     }
-)
+}
+
+provisioner_options.append(app_name_option)
+reprovision_options.append(app_dir_option)
 
 add_license_args = [
     {
@@ -166,30 +188,35 @@ alt_default_sources = {
 }
 
 
-def format_empty_pkg_templates(app_dir, include_bin, **kwargs):
+def format_empty_pkg_templates(app_dir, include_bin=False, enable=None, **kwargs):
     """Format templates for empty py pkg."""
+    app_name = kwargs[app_name_key]
+
     setup_target = os.path.join(app_dir, setup_name)
+    abstract_requires_target = os.path.join(app_dir, abstract_requires_name)
     cmd_target = os.path.join(app_dir, bin_dir, app_dir)
     requirements_target = os.path.join(app_dir, requirements_name)
     manifest_target = os.path.join(app_dir, manifest_name)
     readme_target = os.path.join(app_dir, readme_name)
     gitignore_target = os.path.join(app_dir, gitignore_name)
-    init_target = os.path.join(app_dir, app_dir, init_file)
+    utils_target = os.path.join(app_dir, app_name, pkg_utils_name)
 
     templates = [
         Template("setup", setup_target, stat.S_IRWXU),
+        Template("abstract_requires", abstract_requires_target),
         Template("requirements", requirements_target),
         Template("manifest", manifest_target),
         Template("readme", readme_target),
         Template("gitignore", gitignore_target),
-        Template("init", init_target)
+        Template("pkg_utils", utils_target)
     ]
 
     if include_bin:
         templates.append(Template("cmd", cmd_target))
 
     for t in templates:
-        t.write_formatted_template(**kwargs)
+        if enable is None or t.template_name in enable:
+            t.write_formatted_template(**kwargs)
 
 
 def rename_src(src_dir):
@@ -207,7 +234,29 @@ def rename_src(src_dir):
 
     shutil.move(src_dir, new_name)
     return new_name
-    
+
+
+def reprovision(**kwargs):
+    """Reprovision pkg at specified path."""
+    app_dir = os.path.normpath(kwargs.get(app_dir_key))
+    app_name = os.path.basename(app_dir)
+    app_parent_dir = os.path.dirname(app_dir)
+
+    kwargs[app_name_key] = app_name
+    kwargs[app_dir_key] = app_dir
+
+    os.chdir(app_parent_dir)
+    print("Re-provisioning {0}...".format(app_name))
+    reprovision_template("setup", **kwargs)
+    reprovision_template("pkg_utils", **kwargs)
+
+
+def reprovision_template(template, **kwargs):
+    """Rebuild the template for specified pkg."""
+
+    enable = set([make_template_name(template)])
+    format_empty_pkg_templates(enable=enable, **kwargs)
+
 
 def provision(**kwargs):
     """Create files and dirs for empty py pkg."""
@@ -231,7 +280,6 @@ def provision(**kwargs):
     test_path = os.path.join(main_app_path, test_dir)
     data_path = os.path.join(main_app_path, create_data_dir_name(app_name))
     config_path = os.path.join(main_app_path, create_config_dir_name(app_name))
-
 
     #cp from src
     new_src_dir = None
@@ -284,7 +332,6 @@ def provision(**kwargs):
     # build templates with kwargs
     format_empty_pkg_templates(
         app_name,
-        script_dir=bin_dir,
         include_bin=include_bin,
         **kwargs
     )
@@ -319,8 +366,10 @@ main.__doc__ = """
     ├── README.md
     ├── requirements.txt
     ├── setup.py
+    ├── abstract_requires.py
     └── test_pkg
         ├── __init__.py
+        ├── pkg_utils.py
         ├── (test_pkg_data)
         │   └── ...
         ├── (test_pkg_config)
@@ -336,6 +385,14 @@ provision = make_click_command(
     pkg_name,
     provision,
     options=provisioner_options,
+    default_prompt=True,
+    set_defaults=True,
+    group=main
+)
+reprovision = make_click_command(
+    pkg_name,
+    reprovision,
+    options=reprovision_options,
     default_prompt=True,
     set_defaults=True,
     group=main

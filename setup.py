@@ -1,31 +1,29 @@
 #!/usr/bin/python3
-"""Setup module for provisioner pkg."""
-from setuptools import setup
+"""Setup module for provision_py_proj pkg."""
+from setuptools import setup, find_packages
 import os
 import sys
 import shutil
 import stat
 from setuptools.command.develop import develop
 from setuptools.command.install import install
+from abstract_requires import requires
 
 pkg_name = "provision_py_proj"
 parent_dir = os.path.dirname(os.path.realpath(__file__))
 data_src_dir = pkg_name + "_data"
 config_src_dir = pkg_name + "_config"
 defaults_location = os.path.join(pkg_name, "defaults")
-requires = [
-    "appdirs"
-    "click",
-    "pytest"
-]
-
 
 # Create scripts list
 script_dir = os.path.join(parent_dir, "bin")
 scripts = []
-for f in os.listdir(script_dir):
-    scripts.append(os.path.join(script_dir, str(f)))
+try:
+    for f in os.listdir(script_dir):
+        scripts.append(os.path.join(script_dir, str(f)))
 
+except FileNotFoundError:
+    pass
 
 def copy_pkg_files():
     """Copy config and data files."""
@@ -37,26 +35,27 @@ def copy_pkg_files():
     ]
     for d, t in pkg_dirs_to_copy:
         t = os.path.join(t, d)
-        d = os.path.join(parent_dir, pkg_name, d)
+        d = os.path.join(os.path.join(parent_dir, pkg_name), d)
 
-        shutil.rmtree(t)
-        shutil.copytree(d, t)
+        if os.path.exists(d):
+            shutil.rmtree(t, ignore_errors=True)
+            shutil.copytree(d, t)
 
-        user = os.environ["SUDO_USER"]
+            user = os.environ["SUDO_USER"]
 
-        for root, dirs, files in os.walk(t):
-            shutil.chown(root, user=user, group=user)
-            os.chmod(root, stat.S_IRWXU)
+            for root, dirs, files in os.walk(t):
+                shutil.chown(root, user=user, group=user)
+                os.chmod(root, stat.S_IRWXU)
 
-            for d in dirs:
-                d_path = os.path.join(root, d)
-                shutil.chown(d_path, user=user, group=user)
-                os.chmod(d_path, stat.S_IRWXU)
+                for d in dirs:
+                    d_path = os.path.join(root, d)
+                    shutil.chown(d_path, user=user, group=user)
+                    os.chmod(d_path, stat.S_IRWXU)
 
-            for f in files:
-                f_path = os.path.join(root, f)
-                shutil.chown(f_path, user=user, group=user)
-                os.chmod(f_path, stat.S_IRUSR | stat.S_IWUSR)
+                for f in files:
+                    f_path = os.path.join(root, f)
+                    shutil.chown(f_path, user=user, group=user)
+                    os.chmod(f_path, stat.S_IRUSR | stat.S_IWUSR)
 
 
 def reset():
@@ -69,14 +68,14 @@ def reset():
 def setuptools_setup():
     """Setup provisioner."""
     setup(
-        name=pkg_name,
+        name="provision_py_proj",
         version="0.1",
-        description="Provision basic python package with command line interface (For submission to PyPi)",
-        url="https://github.com/ku-wolf/provision_py_proj",
-        author="Kevin Wolf",
-        author_email="kevinuwolf@gmail.com",
-        license="GPLV3",
-        packages=["provision_py_proj"],
+        description="default description",
+        url="default url",
+        author="default author",
+        author_email="default author",
+        license="gplv3.txt",
+        packages=find_packages(),
         scripts=scripts,
         install_requires=requires,
         setup_requires=requires,

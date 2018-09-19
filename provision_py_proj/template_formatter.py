@@ -2,7 +2,7 @@
 """Format templates for empty Py Pkg."""
 
 import os
-from provision_py_proj import pkg_name
+from provision_py_proj.pkg_utils import pkg_name
 from provision_py_proj.data_and_config_manager import create_data_dir_location
 
 user_data_dir = create_data_dir_location(pkg_name)
@@ -33,7 +33,7 @@ class Template:
     def write_formatted_template(self, **kwargs):
         """Format template with kwargs and write to target."""
         with open(self.template_path, "r") as template:
-            with open(self.target, "a") as target:
+            with open(self.target, "w") as target:
                 for l in template:
                     target.write(l.format(**kwargs))
             if self.file_stat:

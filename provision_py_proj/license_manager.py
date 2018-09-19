@@ -3,7 +3,7 @@
 
 import os
 import shutil
-from provision_py_proj import pkg_name
+from provision_py_proj.pkg_utils import pkg_name
 from provision_py_proj.data_and_config_manager import create_data_dir_location
 
 license_dir_name = "licenses"

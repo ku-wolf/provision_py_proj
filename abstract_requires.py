@@ -1,0 +1,5 @@
+requires = [
+    "appdirs",
+    "click",
+    "pytest"
+]

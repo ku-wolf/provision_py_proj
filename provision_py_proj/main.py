@@ -245,7 +245,8 @@ def reprovision(**kwargs):
     kwargs[app_name_key] = app_name
     kwargs[app_dir_key] = app_dir
 
-    os.chdir(app_parent_dir)
+    if app_parent_dir:
+        os.chdir(app_parent_dir)
     print("Re-provisioning {0}...".format(app_name))
     reprovision_template("setup", **kwargs)
     reprovision_template("pkg_utils", **kwargs)

@@ -1,7 +1,8 @@
-    Provision an empty Python package.
+# provision_py_proj
 
-    Create empty Package with following structure:
+Provision an empty Python package.
 
+Create empty Package with following structure:
 
     test_pkg
     ├── bin
@@ -16,3 +17,10 @@
         ├── __init__.py
         └── test
             └── __init__.py
+
+
+# Installation
+
+python3 -m pip install --index-url https://test.pypi.org/simple/ example_pkg
+provision_py_proj --help
+

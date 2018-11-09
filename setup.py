@@ -65,20 +65,30 @@ def reset():
         shutil.rmtree(d, ignore_errors=True)
 
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 def setuptools_setup():
     """Setup provisioner."""
     setup(
         name="provision_py_proj",
         version="0.1",
-        description="default description",
-        url="default url",
-        author="default author",
-        author_email="default author",
+        description="Utility for the creation of python packages.",
+        url="https://github.com/ku-wolf/provision_py_proj",
+        author="Kevin Wolf",
+        author_email="kevinuwolf@gmail.com",
         license="gplv3.txt",
         packages=find_packages(),
         scripts=scripts,
         install_requires=requires,
         setup_requires=requires,
+        long_description=long_description,
+        long_description_content_type,
+        classifiers=[
+            "Programming Language :: Python :: 3",
+            "Operating System :: OS Independent",
+            "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
+        ]
     )
 
 

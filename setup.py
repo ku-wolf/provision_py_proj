@@ -64,7 +64,6 @@ def reset():
     for d in dirnames_to_remove:
         shutil.rmtree(d, ignore_errors=True)
 
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 

@@ -41,7 +41,10 @@ def copy_pkg_files():
             shutil.rmtree(t, ignore_errors=True)
             shutil.copytree(d, t)
 
-            user = os.environ["SUDO_USER"]
+            if "SUDO_USER" in os.environ:
+                user = os.environ["SUDO_USER"]
+            else:
+                user = os.environ["USER"]
 
             for root, dirs, files in os.walk(t):
                 shutil.chown(root, user=user, group=user)

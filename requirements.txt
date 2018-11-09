@@ -1,2 +1,2 @@
 appdirs>=1.4.0
-pytest>=3.5.1
+click>=7.0

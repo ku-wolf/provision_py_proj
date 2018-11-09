@@ -83,7 +83,7 @@ def setuptools_setup():
         install_requires=requires,
         setup_requires=requires,
         long_description=long_description,
-        long_description_content_type,
+        long_description_content_type="text/markdown",
         classifiers=[
             "Programming Language :: Python :: 3",
             "Operating System :: OS Independent",

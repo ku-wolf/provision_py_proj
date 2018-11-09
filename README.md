@@ -21,6 +21,6 @@ Create empty Package with following structure:
 
 # Installation
 
-python3 -m pip install --index-url https://test.pypi.org/simple/ example_pkg
+python3 -m pip install --index-url https://test.pypi.org/simple/ provision_py_proj
 provision_py_proj --help
 
